@@ -42,7 +42,7 @@ module.exports = {
     rules: [
       {
         // 规则使用正则表达式
-        test: /\.css$/, // 匹配资源
+        test: /\.css$/, // 匹配css资源
         // loader: 'css-loader', // 写法一
         // use: ['css-loader'] // 写法二
         // 写法三 注意: 编写顺序(从下往上, 从右往做, 从后往前)
@@ -73,6 +73,17 @@ module.exports = {
       }
     ]
   }
+}
+```
+
+**入口文件`entry`其实是和另一个属性时有关的 `context`*
+
+context的作用是用于解析入口(entry point)和加载器(loader)，官方说法:默认是当前路径(但是经过测试，默认应该是webpack的启动目录）,比如配置文件变成了`config/webpack.config.js`
+
+```js
+module.exports = {
+  context: path.resolve(__dirname, './')
+  entry: '../src/index.js', //指定入口文件
 }
 ```
 
@@ -130,11 +141,11 @@ const {DefinePlugin} = require('webpack')
 
 module.exports = {
   plugins: [
-		new CleanWebpackPlugin(),
-		new HtmlWebpackPlugin({
-			title: '学习webpack',
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      title: '学习webpack',
       template: './public/index.html' // 指定html模板
-		}),
+    }),
     new DefinePlugin({ 
       // DefinePlugin允许在编译时创建配置的全局常量,编译template就可以正确的编译了，会读取到BASE_URL的值
       BASE_URL: '"./"'
@@ -143,7 +154,7 @@ module.exports = {
       patterns: [ //复制的规则在patterns中设置
         {
           from: "public", // 设置从哪一个源中开始复制,
-    			// to: './dist', //复制到的位置，可以省略，会默认复制到打包的目录下
+          // to: './dist', //复制到的位置，可以省略，会默认复制到打包的目录下
           globOptions: { //设置一些额外的选项，其中可以编写需要忽略的文件
             ignore: [
               "**/index.html", //我们已经通过HtmlWebpackPlugin完成了index.html的生成,忽略复制
@@ -154,7 +165,7 @@ module.exports = {
         }
       ]
     })
-	]
+  ]
 }
 ```
 
@@ -168,13 +179,13 @@ module.exports = {
 string = 'production': 'none' | 'development' | 'production'
 ```
 
-
-
 | 选项          | 描述                                                         |
 | :------------ | :----------------------------------------------------------- |
 | `development` | 会将 `DefinePlugin` 中 `process.env.NODE_ENV` 的值设置为 `development`. 为模块和 chunk 启用有效的名。 |
 | `production`  | 会将 `DefinePlugin` 中 `process.env.NODE_ENV` 的值设置为 `production`。为模块和 chunk 启用确定性的混淆名称，`FlagDependencyUsagePlugin`，`FlagIncludedChunksPlugin`，`ModuleConcatenationPlugin`，`NoEmitOnErrorsPlugin` 和 `TerserPlugin` 。 |
 | `none`        | 不使用任何默认优化选项                                       |
+
+![mode的不同模式](https://s2.loli.net/2022/01/09/UnSfvCeP4R6O9Ij.png)
 
 ## source-map
 
@@ -230,16 +241,31 @@ npm install babel-loader @babel/core @babel/preset-env
 `webpack.config.js`的`rules`中新增一个规则
 
 ```js
-module: {  rules: [     {          test: /\.m?js$/,          use: {            loader: 'babel-loader'          }      }  ]}
+module: {
+  rules: [
+     {
+          test: /\.m?js$/,
+          use: {
+            loader: 'babel-loader'
+          }
+      }
+  ]
+}
 ```
 
 `babel.config.js`
 
 ```js
-module.exports = {  presets: [    [      '@babel/preset-env'    ]  ]}
+module.exports = {
+  presets: [
+    [
+      '@babel/preset-env'
+    ]
+  ]
+}
 ```
 
-# polyfill	
+# polyfill  
 
 当我们使用了一些语法特性（例如：Promise, Generator, Symbol等以及实例方法例如 Array.prototype.includes等），但是某些浏览器压根不认识这些特性，必然会报错，我们可以使用`polyfill`来填充或者说打一个补丁，那么就会包含该特性了。
 
@@ -258,7 +284,17 @@ npm install core-js regenerator-runtime --save
 配置`webpack.config.js`,忽略`nodemodules`文件夹
 
 ```js
-module: {  rules: [     {          test: /\.m?js$/,       		exclude: /node_modules/,          use: {            loader: 'babel-loader'          }      }  ]}
+module: {
+  rules: [
+     {
+          test: /\.m?js$/,
+       		exclude: /node_modules/,
+          use: {
+            loader: 'babel-loader'
+          }
+      }
+  ]
+}
 ```
 
 
@@ -266,10 +302,23 @@ module: {  rules: [     {          test: /\.m?js$/,       		exclude: /node_modul
 配置`babel.config.js`
 
 ```js
-module.exports = {  presets: [    [      '@babel/preset-env',      {        // false: 不用任何的polyfill相关的代码        // usage: 代码中需要哪些polyfill, 就引用相关的api        // entry: 手动在入口文件中导入 core-js/regenerator-runtime, 根据目标浏览器引入所有对应的polyfill        useBuiltIns: 'entry', //设置以什么样的方式来使用polyfill；        corejs: 3 //设置corejs的版本，目前使用较多的是3.x的版本      }    ]  ]}
+module.exports = {
+  presets: [
+    [
+      '@babel/preset-env',
+      {
+        // false: 不用任何的polyfill相关的代码
+        // usage: 代码中需要哪些polyfill, 就引用相关的api
+        // entry: 手动在入口文件中导入 core-js/regenerator-runtime, 根据目标浏览器引入所有对应的polyfill
+        useBuiltIns: 'entry', //设置以什么样的方式来使用polyfill；
+        corejs: 3 //设置corejs的版本，目前使用较多的是3.x的版本
+      }
+    ]
+  ]
+}
 ```
 
-# React
+# 对React的JSX语法解析
 
 在我们编写react代码时，react使用的语法是jsx，jsx是可以直接使用babel来转换的。  对react jsx代码进行处理需要如下的插件： 
 
@@ -294,23 +343,29 @@ module.exports = {  presets: [    ["@babel/preset-react"]  ]}
 `webpack.config.js`也要设置对jsx的支持
 
 ```js
-module: {  rules: [     {          test: /\.jsx$/,       		exclude: /node_modules/,          use: {            loader: 'babel-loader'          }      }  ]}
+module: {
+  rules: [
+     {
+          test: /\.jsx$/,
+       		exclude: /node_modules/,
+          use: {
+            loader: 'babel-loader'
+          }
+      }
+  ]
+}
 ```
 
-# Vue
+# 对Vue的template模板解析
 
 ```bash
 npm install vue-template-compiler vue-loader -D
-```
-
-`webpack.config.js`
-
-```js
+webpack.config.js
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
     module: {
-     		rules: [
+        rules: [
           {
             test: /\.vue$/,
             use: "vue-loader"
@@ -323,14 +378,22 @@ module.exports = {
 }
 ```
 
-# HRM
+# 热模块替换HMR
 
-我们希望浏览器可以事实的监听页面的变化并刷新浏览器
+webpack给我们提供了watch模式: 在该模式下，webpack依赖图中的所有文件，只要有一个发生了更新，那么代码将被重新编译; 我们不需要手动去运行 npm run build指令了,我们在package.json的 scripts 中添加一个 watch 的脚本：
+
+```bash
+"webpack": "webpack --watch"
+```
+
+但是这种方式只能够监听文件的变换，但我们希望浏览器可以事实的监听页面的变化并刷新浏览器，我们就需要用到`webpack-dev-server`
 
 ```bash
 npm install --save-dev webpack-dev-server
 ```
 
+webpack-dev-server 在编译之后不会写入到任何输出文件。而是将 bundle 文件保留在内存中: 事实上webpack-dev-server使用了一个库叫memfs(memory-fs webpack自己写的)
+开启热模块替换
 `webpack.config.js`
 
 ```js
@@ -348,3 +411,174 @@ devServer: {
   "serve": "webpack serve"
 },
 ```
+
+其实，webpack-dev-server会创建两个服务:提供静态资源的服务(express)和Socket服务(net.Socket); express server负责直接提供静态资源的服务(打包后的资源直接被浏览器请求和解析)
+HMR Socket Server，是一个socket的长连接: 长连接有一个最好的好处是建立连接后双方可以通信(服务器可以直接发送文件到客户端); 当服务器监听到对应的模块发生变化时，会生成两个文件.json(manifest文件)和.js文件(update chunk); 通过长连接，可以直接将这两个文件主动发送给客户端(浏览器)，浏览器拿到两个新的文件后，通过HMR runtime机制，加载这两个文件，并且针对修改的模块进行更新
+
+# webpack路径处理
+
+## output的publicPath
+
+output中还有一个publicPath属性，该属性是指定index.html文件打包引用的一个基本路径: 它的默认值是一个空字符串，所以我们打包后引入js文件时，路径是 bundle.js; 
+
+- 在开发中，我们也将其设置为 / ，路径是 /bundle.js，那么浏览器会根据所在的域名+路径去请求对应的资源;
+- 如果我们希望在本地直接打开html文件来运行，会将其设置为 `./`，路径时 ./bundle.js,打包后的资源的路径就会变成
+
+```html
+<script src="./static/js/2.ed26de05.chunk.js"></script>
+<script src="./static/js/main.16f2a5bf.chunk.js"></script>
+```
+
+## devServer的publicPath
+
+devServer中也有一个publicPath的属性，该属性是指定本地服务所在的文件夹:
+
+- 它的默认值是 /，也就是我们直接访问端口即可访问其中的资源 http://localhost:8080; 
+- 如果我们将其设置为了 /abc，那么我们需要通过 http://localhost:8080/abc才能访问到对应的打包后的资源; 
+- 并且这个时候，我们其中的bundle.js通过 http://localhost:8080/bundle.js也是无法访问的: 所以必须将output.publicPath也设置为 /abc;
+  **官方其实有提到，建议 devServer.publicPath 与 output.publicPath相同**
+
+## devServer的contentBase
+
+devServer中contentBase对于我们直接访问打包后的资源其实并没有太大的作用，它的主要作用是如果我们打包 后的资源，又依赖于其他的一些资源，那么就需要指定从哪里来查找这个内容:
+
+比如在index.html中，我们需要依赖一个 abc.js 文件，这个文件我们存放在 public文件中
+
+比如代码是这样的:
+
+```html
+<script src="./public/abc.js"></script>
+```
+
+ 但是这样打包后浏览器是无法通过相对路径去找到这个文件夹的,所以代码是这样的:
+
+```html
+<script src="/abc.js"></script>
+```
+
+ 但是我们如何让它去查找到这个文件的存在呢? 设置contentBase即可(`abc.js`文件在yogln文件夹下)
+
+```js
+devServer: {
+    contentBase: path.resolve(__dirname, "./yogln"),
+    watchContentBase: true,
+}
+```
+
+打包过后的`index.html`文件就能找到引用的资源了
+
+在devServer中还有一个可以监听contentBase发生变化后重新编译的一个属性:watchContentBase。 							 	
+
+## homege: './'
+
+package.json文件中的`homepage` 的作用是设置应用的根路径，我们的项目打包后是要运行在一个域名之下的，有时候可能是运行在根域名下，也有可能运行在某个子域名下或或域名的某个目录下，这时候我们就需要让我们的应用知道去哪里加载资源，这时候就需要我们设置一个跟路径，而且有时候我们的资源会部署在 CDN 上，你必须告诉打包工具你的CDN地址是什么。
+
+# devServer篇
+
+```js
+devServer: {
+  	hotOnly: true, //代码编译失败时，是否刷新整个页面,不希望重新刷新整个页面，可以设置hotOnly为true
+    // host: "0.0.0.0", //默认值是localhost; 如果希望其他地方也可以访问，可以设置为 0.0.0.0
+    // port: 7777,
+    // open: true,
+    // compress: true,  //compress是否为静态文件开启gzip compression
+    contentBase: path.resolve(__dirname, "./yogln"),
+    watchContentBase: true,
+}
+```
+
+**host:localhost 和 0.0.0.0 的区别: ** 
+
+- localhost:
+  - 本质上是一个域名，通常情况下会被解析成127.0.0.1;  
+  - 127.0.0.1:回环地址(Loop Back Address)，表达的意思其实是我们主机自己发出去的包，直接被自己接收; 								
+  - 正常的数据库包经常 应用层 - 传输层 - 网络层 - 数据链路层 - 物理层 ;  
+  - 而回环地址，是在网络层直接就被获取到了，是不会经常数据链路层和物理层的;
+  -  比如我们监听 127.0.0.1时，在同一个网段下的主机中，通过ip地址是不能访问的; 								
+
+- 0.0.0.0:
+  - 监听IPV4上所有的地址，再根据端口找到不同的应用程序;  
+  - 比如我们监听 0.0.0.0时，在同一个网段下的主机中，通过ip地址是可以访问的; 	
+
+## 配置proxy代理
+
+proxy是我们开发中非常常用的一个配置选项，它的目的设置代理来解决跨域访问的问题: 比如我们的一个api请求是 http://localhost:8888，但是本地启动服务器的域名是 http://localhost:8000，这个时候发送网络请求就会出现跨域的问题，那么我们可以将请求先发送到一个代理服务器，代理服务器和API服务器没有跨域的问题，就可以解决我们的跨域问题了;
+
+```js
+devServer: {
+ 	proxy: {
+      "/api": {
+        target: "http://localhost:8888", //表示的是代理到的目标地址
+        pathRewrite: { //我们可以删除代理路径
+          "^/api": ""
+        },
+        secure: false, //默认情况下不接收转发到https的服务器上，如果希望支持，可以设置为false
+        changeOrigin: true //表示是否更新代理后请求的headers中host地址
+      }
+   }, 
+}
+```
+
+这个 changeOrigin官方说的非常模糊，通过查看源码发现其实是要修改代理请求中的headers中的host属性: 
+
+- 因为我们真实的请求，其实是需要通过 http://localhost:8888来请求的; 
+- 但是因为使用了代理，默认情况下它的值时 http://localhost:8000; 
+- 如果我们需要修改，那么可以将changeOrigin设置为true即可;
+
+![image-20220112120724751](https://gitee.com/yogln/image-mac/raw/master/image-20220112120724751.png)
+
+# 性能优化
+
+## **JavaScript Tree Shaking**
+
+webpack实现Tree Shaking采用了两种不同的方案: 
+
+- usedExports:通过标记某些函数是否被使用，之后通过Terser来进行优化的，usedExports实现Tree Shaking是结合Terser来完成的。
+- sideEffects:跳过整个模块/文件，直接查看该文件是否有副作用;
+
+在package.json中设置sideEffects的值为`false`,告知webpack可以安全的删除未用到的exports,如果有一些我们希望保留，可以设置为数组
+
+## CSS实现Tree Shaking
+
+```bash
+ npm install purgecss-webpack-plugin -D
+```
+
+配置这个插件(生成环境):
+
+- paths:表示要检测哪些目录下的内容需要被分析，这里我们可以使用glob; 
+- 默认情况下，Purgecss会将我们的html标签的样式移除掉，如果我们希望保留，可以添加一个safelist的属性
+
+```js
+const PurgeCssPlugin = require('purgecss-webpack-plugin');
+
+const path = require('path');
+// node中的api
+const appDir = process.cwd();
+const resolveApp = (relativePath) => path.resolve(appDir, relativePath);
+
+plugins: [
+  new PurgeCssPlugin({
+    paths: glob.sync(`${resolveApp("./src")}/**/*`, {nodir: true}),
+    safelist: function() {
+      return {
+        standard: ["body", "html"]
+      }
+    }
+  })
+]
+```
+
+## **Scope Hoisting**
+
+>  Scope Hoisting从webpack3开始增加的一个新功能，功能是对作用域进行提升，并且让webpack打包后的代码更小、运行更快;
+
+默认情况下webpack打包会有很多的函数作用域，包括一些(比如最外层的)IIFE：无论是从最开始的代码运行，还是加载一个模块，都需要执行一系列的函数，Scope Hoisting可以将函数合并到一个模块中来运行
+
+- 在production模式下，默认这个模块就会启用; 
+- 在development模式下，我们需要自己来打开该模块
+
+```js
+new webpack.optimize.ModuleConcatenationPlugin()
+```
+
